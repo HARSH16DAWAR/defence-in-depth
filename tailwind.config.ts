@@ -96,10 +96,53 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "pulse-glow": {
+          "0%, 100%": { 
+            boxShadow: "0 0 20px 5px var(--glow-color, rgba(59, 130, 246, 0.5))",
+            transform: "scale(1)"
+          },
+          "50%": { 
+            boxShadow: "0 0 40px 10px var(--glow-color, rgba(59, 130, 246, 0.8))",
+            transform: "scale(1.05)"
+          },
+        },
+        "data-packet": {
+          "0%": { transform: "translateY(0) scale(1)", opacity: "1" },
+          "50%": { transform: "translateY(50%) scale(1.1)", opacity: "1" },
+          "100%": { transform: "translateY(100%) scale(1)", opacity: "1" },
+        },
+        "slide-in-right": {
+          "0%": { transform: "translateX(100%)", opacity: "0" },
+          "100%": { transform: "translateX(0)", opacity: "1" },
+        },
+        "slide-out-right": {
+          "0%": { transform: "translateX(0)", opacity: "1" },
+          "100%": { transform: "translateX(100%)", opacity: "0" },
+        },
+        "threat-blocked": {
+          "0%": { transform: "scale(1)", opacity: "1" },
+          "50%": { transform: "scale(1.3)", opacity: "0.8" },
+          "100%": { transform: "scale(0)", opacity: "0" },
+        },
+        "float": {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
+        "circuit-pulse": {
+          "0%, 100%": { opacity: "0.3" },
+          "50%": { opacity: "0.8" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "pulse-glow": "pulse-glow 2s ease-in-out infinite",
+        "data-packet": "data-packet 1s ease-in-out",
+        "slide-in-right": "slide-in-right 0.4s ease-out",
+        "slide-out-right": "slide-out-right 0.3s ease-in",
+        "threat-blocked": "threat-blocked 0.5s ease-out forwards",
+        "float": "float 3s ease-in-out infinite",
+        "circuit-pulse": "circuit-pulse 2s ease-in-out infinite",
       },
     },
   },
