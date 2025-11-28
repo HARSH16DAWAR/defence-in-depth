@@ -100,12 +100,26 @@ export async function registerRoutes(
   });
 
   // API endpoint to get defense layers for presentation
+  // Support both /api/defense-layers and /defense-layers (for Vercel routing)
   app.get("/api/defense-layers", (_req, res) => {
+    res.json(defenseLayersData);
+  });
+  app.get("/defense-layers", (_req, res) => {
     res.json(defenseLayersData);
   });
 
   // API endpoint to get a specific defense layer
   app.get("/api/defense-layers/:id", (req, res) => {
+    const layerId = req.params.id;
+    const layer = defenseLayersData.find(l => l.id === layerId);
+    
+    if (!layer) {
+      return res.status(404).json({ error: "Defense layer not found" });
+    }
+    
+    res.json(layer);
+  });
+  app.get("/defense-layers/:id", (req, res) => {
     const layerId = req.params.id;
     const layer = defenseLayersData.find(l => l.id === layerId);
     

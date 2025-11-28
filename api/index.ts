@@ -16,10 +16,13 @@ app.use(express.urlencoded({ extended: false }));
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
+  const url = req.url;
+
+  console.log(`[Vercel] ${req.method} ${url} (path: ${path})`);
 
   res.on("finish", () => {
     const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
+    if (path.startsWith("/api") || url.startsWith("/api")) {
       console.log(`${req.method} ${path} ${res.statusCode} in ${duration}ms`);
     }
   });
@@ -55,9 +58,16 @@ const initPromise = (async () => {
   }
 })();
 
+// Add a test route before wrapping
+app.get("/api/test", (_req, res) => {
+  res.json({ message: "API is working", timestamp: new Date().toISOString() });
+});
+
 // Export as Vercel serverless function
 export default async function vercelHandler(req: VercelRequest, res: VercelResponse) {
   try {
+    console.log(`[Vercel Handler] ${req.method} ${req.url}`);
+    
     await initPromise;
     
     if (initError) {
