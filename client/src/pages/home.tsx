@@ -1029,8 +1029,6 @@ export default function Home() {
   const [currentLayer, setCurrentLayer] = useState(1);
   const [completedLayers, setCompletedLayers] = useState<number[]>([]);
   const [loopCount, setLoopCount] = useState(1);
-  const [currentThreat, setCurrentThreat] = useState<ThreatScenario | null>(null);
-  const [threatBlockedAt, setThreatBlockedAt] = useState<number | null>(null);
   const [selectedThreatScenario, setSelectedThreatScenario] = useState<ThreatScenario | null>(null);
   const [isSimulatingAttack, setIsSimulatingAttack] = useState(false);
   const [attackStep, setAttackStep] = useState(0);
@@ -1042,13 +1040,6 @@ export default function Home() {
   const resetAnimation = useCallback(() => {
     setCurrentLayer(1);
     setCompletedLayers([]);
-    setCurrentThreat(null);
-    setThreatBlockedAt(null);
-  }, []);
-
-  const selectRandomThreat = useCallback(() => {
-    const randomIndex = Math.floor(Math.random() * threatScenarios.length);
-    return threatScenarios[randomIndex];
   }, []);
 
   useEffect(() => {
@@ -1074,21 +1065,11 @@ export default function Home() {
         if (nextLayer > 7) {
           setLoopCount((c) => c + 1);
           setCompletedLayers([]);
-          setCurrentThreat(selectRandomThreat());
-          setThreatBlockedAt(null);
           const firstEnabled = enabledLayers.find(l => l >= 1) || 1;
           return firstEnabled;
         }
         
         setCompletedLayers((completed) => [...completed, prev]);
-        
-        if (currentThreat && currentThreat.blockedAtLayer === nextLayer && enabledLayers.includes(nextLayer)) {
-          setThreatBlockedAt(nextLayer);
-          setTimeout(() => {
-            setCurrentThreat(null);
-            setThreatBlockedAt(null);
-          }, 1500);
-        }
         
         return nextLayer;
       });
@@ -1099,14 +1080,7 @@ export default function Home() {
         clearInterval(intervalRef.current);
       }
     };
-  }, [isPlaying, speed, currentThreat, selectRandomThreat, activeTab, enabledLayers]);
-
-  useEffect(() => {
-    if (!currentThreat) {
-      const threat = selectRandomThreat();
-      setCurrentThreat(threat);
-    }
-  }, [currentThreat, selectRandomThreat]);
+  }, [isPlaying, speed, activeTab, enabledLayers]);
 
   const handlePlayPause = () => setIsPlaying(!isPlaying);
   
@@ -1128,25 +1102,15 @@ export default function Home() {
       if (nextLayer > 7) {
         setLoopCount((c) => c + 1);
         setCompletedLayers([]);
-        setCurrentThreat(selectRandomThreat());
-        setThreatBlockedAt(null);
         const firstEnabled = enabledLayers.find(l => l >= 1) || 1;
         return firstEnabled;
       }
       
       setCompletedLayers((completed) => [...completed, prev]);
       
-      if (currentThreat && currentThreat.blockedAtLayer === nextLayer && enabledLayers.includes(nextLayer)) {
-        setThreatBlockedAt(nextLayer);
-        setTimeout(() => {
-          setCurrentThreat(null);
-          setThreatBlockedAt(null);
-        }, 1500);
-      }
-      
       return nextLayer;
     });
-  }, [enabledLayers, currentThreat, selectRandomThreat]);
+  }, [enabledLayers]);
 
   const handlePreviousStep = useCallback(() => {
     setIsPlaying(false);
@@ -1162,7 +1126,6 @@ export default function Home() {
       }
       
       setCompletedLayers((completed) => completed.filter(l => l < prevLayer));
-      setThreatBlockedAt(null);
       
       return prevLayer;
     });
@@ -1364,18 +1327,6 @@ export default function Home() {
                                 )}
                               </div>
 
-                              {threatBlockedAt === layer.id && (
-                                <motion.div
-                                  initial={{ scale: 0, opacity: 0 }}
-                                  animate={{ scale: [1, 1.3, 0], opacity: [1, 0.8, 0] }}
-                                  transition={{ duration: 0.6 }}
-                                  className="absolute inset-0 flex items-center justify-center"
-                                >
-                                  <div className="p-3 rounded-full bg-red-500/20 border-2 border-red-500">
-                                    <AlertTriangle className="w-8 h-8 text-red-500" />
-                                  </div>
-                                </motion.div>
-                              )}
                             </div>
                           );
                         })}
@@ -1397,7 +1348,7 @@ export default function Home() {
                           layer={activeLayer}
                           isActive={true}
                           isComplete={completedLayers.includes(activeLayer.id)}
-                          threatBlocked={threatBlockedAt === activeLayer.id ? currentThreat : null}
+                          threatBlocked={null}
                         />
                       )}
                     </div>
