@@ -37,6 +37,11 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
   res.status(status).json({ message });
 });
 
+// Add a test route early for debugging
+app.get("/api/test", (_req, res) => {
+  res.json({ message: "API is working", timestamp: new Date().toISOString() });
+});
+
 // Initialize routes once
 let routesInitialized = false;
 let handler: ReturnType<typeof serverless> | null = null;
@@ -57,11 +62,6 @@ const initPromise = (async () => {
     }
   }
 })();
-
-// Add a test route before wrapping
-app.get("/api/test", (_req, res) => {
-  res.json({ message: "API is working", timestamp: new Date().toISOString() });
-});
 
 // Export as Vercel serverless function
 export default async function vercelHandler(req: VercelRequest, res: VercelResponse) {
