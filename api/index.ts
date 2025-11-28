@@ -37,22 +37,44 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
 // Initialize routes once
 let routesInitialized = false;
 let handler: ReturnType<typeof serverless> | null = null;
+let initError: Error | null = null;
 
 const initPromise = (async () => {
   if (!routesInitialized) {
-    await registerRoutes(httpServer, app);
-    routesInitialized = true;
-    handler = serverless(app);
+    try {
+      await registerRoutes(httpServer, app);
+      routesInitialized = true;
+      handler = serverless(app, {
+        binary: ['image/*', 'application/pdf'],
+      });
+      console.log("Routes initialized successfully");
+    } catch (error) {
+      console.error("Failed to initialize routes:", error);
+      initError = error as Error;
+    }
   }
 })();
 
 // Export as Vercel serverless function
 export default async function vercelHandler(req: VercelRequest, res: VercelResponse) {
-  await initPromise;
-  if (!handler) {
-    res.status(500).json({ error: "Server not initialized" });
-    return;
+  try {
+    await initPromise;
+    
+    if (initError) {
+      console.error("Initialization error:", initError);
+      res.status(500).json({ error: "Server initialization failed", message: initError.message });
+      return;
+    }
+    
+    if (!handler) {
+      res.status(500).json({ error: "Server not initialized" });
+      return;
+    }
+    
+    return handler(req, res);
+  } catch (error) {
+    console.error("Handler error:", error);
+    res.status(500).json({ error: "Internal server error", message: (error as Error).message });
   }
-  return handler(req, res);
 }
 
