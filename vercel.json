@@ -2,8 +2,11 @@
   "version": 2,
   "buildCommand": "npm run build",
   "outputDirectory": "dist/public",
-  "installCommand": "npm install",
-  "framework": null,
+  "functions": {
+    "api/**/*.ts": {
+      "runtime": "nodejs20.x"
+    }
+  },
   "rewrites": [
     {
       "source": "/((?!api).*)",
