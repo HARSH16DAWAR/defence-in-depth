@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { securityLayers, threatScenarios, layerDetails, quizQuestions } from "@shared/schema";
+import { securityLayers, threatScenarios, layerDetails, quizQuestions, defenseLayersData } from "@shared/schema";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -97,6 +97,23 @@ export async function registerRoutes(
         blockedAtLayer: t.blockedAtLayer
       }))
     });
+  });
+
+  // API endpoint to get defense layers for presentation
+  app.get("/api/defense-layers", (_req, res) => {
+    res.json(defenseLayersData);
+  });
+
+  // API endpoint to get a specific defense layer
+  app.get("/api/defense-layers/:id", (req, res) => {
+    const layerId = req.params.id;
+    const layer = defenseLayersData.find(l => l.id === layerId);
+    
+    if (!layer) {
+      return res.status(404).json({ error: "Defense layer not found" });
+    }
+    
+    res.json(layer);
   });
 
   return httpServer;
