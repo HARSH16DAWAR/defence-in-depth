@@ -16,7 +16,7 @@ export function LayerLegend({ layers }: LayerLegendProps) {
       className="w-full max-w-3xl mx-auto"
     >
       <p className="text-center text-sm text-muted-foreground mb-4">
-        Security Layers (Inner to Outer)
+        Security Layers
       </p>
       <div className="flex flex-wrap justify-center gap-3" data-testid="layer-legend">
         {sortedLayers.map((layer, index) => (

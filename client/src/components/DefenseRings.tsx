@@ -52,7 +52,7 @@ export function DefenseRings({ layers, onLayerClick }: DefenseRingsProps) {
     
     return {
       x: centerX + labelRadius * Math.cos(angle),
-      y: centerY - labelRadius * Math.sin(angle) - 4
+      y: centerY - labelRadius * Math.sin(angle) + 8
     };
   }, []);
 
@@ -142,7 +142,7 @@ export function DefenseRings({ layers, onLayerClick }: DefenseRingsProps) {
                   dominantBaseline="middle"
                   className="pointer-events-none select-none"
                   fill="white"
-                  fontSize={index < 3 ? "28" : "32"}
+                  fontSize={index < 3 ? "22" : "24"}
                   fontWeight="600"
                   letterSpacing="0.02em"
                   initial={{ opacity: 0 }}

@@ -580,87 +580,17 @@ export interface DefenseLayer {
   color: string;
   hoverColor: string;
   purpose: string;
-  description: string;
   tools: Tool[];
 }
 
 export const defenseLayersData: DefenseLayer[] = [
   {
-    id: "data",
-    name: "Data Layer",
+    id: "perimeter",
+    name: "Perimeter Security",
     order: 1,
     color: "#1e40af",
     hoverColor: "#1d4ed8",
-    purpose: "Protecting the most valuable asset - your data",
-    description: "The Data Layer is the innermost and most critical layer of defense. It focuses on protecting data at rest and in transit through encryption, access controls, and data loss prevention mechanisms. This layer ensures that even if other defenses are breached, the data remains secure and unusable to attackers.",
-    tools: [
-      { id: "encryption", name: "Data Encryption", description: "AES-256, RSA encryption for data at rest and in transit", category: "Encryption" },
-      { id: "dlp", name: "Data Loss Prevention (DLP)", description: "Monitors and prevents unauthorized data exfiltration", category: "Prevention" },
-      { id: "backup", name: "Backup & Recovery", description: "Regular encrypted backups with tested recovery procedures", category: "Recovery" },
-      { id: "classification", name: "Data Classification", description: "Categorizes data by sensitivity for appropriate protection", category: "Governance" },
-      { id: "masking", name: "Data Masking", description: "Obscures sensitive data in non-production environments", category: "Privacy" },
-      { id: "rights", name: "Digital Rights Management", description: "Controls access and usage of sensitive documents", category: "Access Control" }
-    ]
-  },
-  {
-    id: "application",
-    name: "Application Layer",
-    order: 2,
-    color: "#2563eb",
-    hoverColor: "#3b82f6",
-    purpose: "Securing software and application interfaces",
-    description: "The Application Layer focuses on securing the software that processes and handles data. This includes implementing secure coding practices, regular vulnerability assessments, and runtime protection. It guards against attacks like SQL injection, XSS, and other application-level exploits.",
-    tools: [
-      { id: "waf", name: "Web Application Firewall (WAF)", description: "Filters and monitors HTTP traffic to web applications", category: "Firewall" },
-      { id: "sast", name: "Static Application Security Testing", description: "Analyzes source code for security vulnerabilities", category: "Testing" },
-      { id: "dast", name: "Dynamic Application Security Testing", description: "Tests running applications for vulnerabilities", category: "Testing" },
-      { id: "rasp", name: "Runtime Application Self-Protection", description: "Real-time protection within the application runtime", category: "Protection" },
-      { id: "api-security", name: "API Security Gateway", description: "Secures API endpoints with authentication and rate limiting", category: "API" },
-      { id: "code-signing", name: "Code Signing", description: "Ensures software authenticity and integrity", category: "Integrity" }
-    ]
-  },
-  {
-    id: "endpoint",
-    name: "Endpoint Layer",
-    order: 3,
-    color: "#3b82f6",
-    hoverColor: "#60a5fa",
-    purpose: "Protecting devices that access your network",
-    description: "The Endpoint Layer secures all devices that connect to the network, including workstations, laptops, mobile devices, and servers. It implements antivirus, endpoint detection and response (EDR), and device management to prevent and detect threats at the device level.",
-    tools: [
-      { id: "edr", name: "Endpoint Detection & Response", description: "Advanced threat detection and automated response on endpoints", category: "Detection" },
-      { id: "antivirus", name: "Next-Gen Antivirus", description: "AI-powered malware detection and prevention", category: "Prevention" },
-      { id: "mdm", name: "Mobile Device Management", description: "Manages and secures mobile devices across the organization", category: "Management" },
-      { id: "patch", name: "Patch Management", description: "Automates security updates across all endpoints", category: "Maintenance" },
-      { id: "host-firewall", name: "Host-Based Firewall", description: "Controls network traffic at the device level", category: "Firewall" },
-      { id: "disk-encryption", name: "Full Disk Encryption", description: "Encrypts entire device storage to protect data", category: "Encryption" }
-    ]
-  },
-  {
-    id: "network",
-    name: "Network Layer",
-    order: 4,
-    color: "#0ea5e9",
-    hoverColor: "#38bdf8",
-    purpose: "Monitoring and controlling network traffic",
-    description: "The Network Layer monitors and controls traffic flowing through the network infrastructure. It implements segmentation, intrusion detection/prevention, and network access controls to identify and block malicious traffic before it reaches critical systems.",
-    tools: [
-      { id: "ids-ips", name: "IDS/IPS Systems", description: "Detects and prevents network-based attacks in real-time", category: "Detection" },
-      { id: "network-firewall", name: "Network Firewall", description: "Filters traffic between network segments based on rules", category: "Firewall" },
-      { id: "nac", name: "Network Access Control", description: "Enforces security policies for devices joining the network", category: "Access Control" },
-      { id: "segmentation", name: "Network Segmentation", description: "Isolates critical systems into separate network zones", category: "Architecture" },
-      { id: "vpn", name: "VPN Solutions", description: "Secure encrypted tunnels for remote access", category: "Encryption" },
-      { id: "sdn", name: "Software-Defined Networking", description: "Programmable network security policies", category: "Architecture" }
-    ]
-  },
-  {
-    id: "perimeter",
-    name: "Perimeter Layer",
-    order: 5,
-    color: "#06b6d4",
-    hoverColor: "#22d3ee",
-    purpose: "Guarding the boundary between internal and external networks",
-    description: "The Perimeter Layer establishes the boundary between trusted internal networks and untrusted external networks. It includes next-generation firewalls, DMZ configurations, and email/web gateways that filter traffic entering and leaving the organization.",
+    purpose: "The Perimeter Layer acts as the organization's outer defense, managing and monitoring all traffic entering or leaving the network. It enforces security policies, blocks unauthorized access, and filters malicious activity before it reaches internal systems. By controlling this boundary, the organization minimizes exposure to external threats such as malware, DDoS attacks, and intrusion attempts.",
     tools: [
       { id: "ngfw", name: "Next-Gen Firewall", description: "Deep packet inspection with application awareness", category: "Firewall" },
       { id: "email-gateway", name: "Email Security Gateway", description: "Filters malicious emails, phishing, and spam", category: "Gateway" },
@@ -671,37 +601,100 @@ export const defenseLayersData: DefenseLayer[] = [
     ]
   },
   {
-    id: "physical",
-    name: "Physical Layer",
-    order: 6,
-    color: "#14b8a6",
-    hoverColor: "#2dd4bf",
-    purpose: "Securing physical access to infrastructure",
-    description: "The Physical Layer protects the tangible assets of an organization including data centers, offices, and hardware. It encompasses access controls, surveillance, environmental controls, and physical security measures that prevent unauthorized physical access to systems.",
+    id: "network",
+    name: "Network Security",
+    order: 2,
+    color: "#2563eb",
+    hoverColor: "#3b82f6",
+    purpose: "The Network Layer monitors and controls traffic flowing through the network infrastructure. It implements segmentation, intrusion detection/prevention, and network access controls to identify and block malicious traffic before it reaches critical systems.",
     tools: [
-      { id: "access-control", name: "Access Control Systems", description: "Keycards, biometrics, and multi-factor physical access", category: "Access Control" },
-      { id: "surveillance", name: "Video Surveillance", description: "CCTV monitoring and recording of facilities", category: "Monitoring" },
-      { id: "environmental", name: "Environmental Controls", description: "Fire suppression, climate control, and power management", category: "Infrastructure" },
-      { id: "guards", name: "Security Personnel", description: "Trained security staff for physical protection", category: "Personnel" },
-      { id: "locks", name: "Physical Locks & Safes", description: "Secure storage for sensitive hardware and media", category: "Storage" },
-      { id: "asset-tracking", name: "Asset Tracking", description: "Inventory and location tracking of physical assets", category: "Management" }
+      { id: "ids-ips", name: "IDS/IPS Systems", description: "Detects and prevents network-based attacks in real-time", category: "Detection" },
+      { id: "network-firewall", name: "Network Firewall", description: "Filters traffic between network segments based on rules", category: "Firewall" },
+      { id: "nac", name: "Network Access Control", description: "Enforces security policies for devices joining the network", category: "Access Control" },
+      { id: "segmentation", name: "Network Segmentation", description: "Isolates critical systems into separate network zones", category: "Architecture" },
+      { id: "vpn", name: "VPN Solutions", description: "Secure encrypted tunnels for remote access", category: "Encryption" },
+      { id: "sdn", name: "Software-Defined Networking", description: "Programmable network security policies", category: "Architecture" }
     ]
   },
   {
-    id: "human",
-    name: "Human Layer",
+    id: "endpoint",
+    name: "Endpoint Security",
+    order: 3,
+    color: "#3b82f6",
+    hoverColor: "#60a5fa",
+    purpose: "The Endpoint Layer focuses on securing user and server devices against malware, misuse, and unauthorized access. It combines prevention, detection, and management technologies to contain threats at the device level before they can spread through the network.",
+    tools: [
+      { id: "edr", name: "Endpoint Detection & Response", description: "Advanced threat detection and automated response on endpoints", category: "Detection" },
+      { id: "antivirus", name: "Next-Gen Antivirus", description: "AI-powered malware detection and prevention", category: "Prevention" },
+      { id: "mdm", name: "Mobile Device Management", description: "Manages and secures mobile devices across the organization", category: "Management" },
+      { id: "patch", name: "Patch Management", description: "Automates security updates across all endpoints", category: "Maintenance" },
+      { id: "host-firewall", name: "Host-Based Firewall", description: "Controls network traffic at the device level", category: "Firewall" },
+      { id: "disk-encryption", name: "Full Disk Encryption", description: "Encrypts entire device storage to protect data", category: "Encryption" }
+    ]
+  },
+  {
+    id: "application",
+    name: "Application Security",
+    order: 4,
+    color: "#0ea5e9",
+    hoverColor: "#38bdf8",
+    purpose: "The Application Layer ensures that software and APIs are developed, tested, and operated securely. It prevents exploitation of application vulnerabilities such as injection and cross-site scripting, maintaining the integrity and reliability of business services.",
+    tools: [
+      { id: "waf", name: "Web Application Firewall (WAF)", description: "Filters and monitors HTTP traffic to web applications", category: "Firewall" },
+      { id: "sast", name: "Static Application Security Testing", description: "Analyzes source code for security vulnerabilities", category: "Testing" },
+      { id: "dast", name: "Dynamic Application Security Testing", description: "Tests running applications for vulnerabilities", category: "Testing" },
+      { id: "rasp", name: "Runtime Application Self-Protection", description: "Real-time protection within the application runtime", category: "Protection" },
+      { id: "api-security", name: "API Security Gateway", description: "Secures API endpoints with authentication and rate limiting", category: "API" },
+      { id: "code-signing", name: "Code Signing", description: "Ensures software authenticity and integrity", category: "Integrity" }
+    ]
+  },
+  {
+    id: "data",
+    name: "Data Security",
+    order: 5,
+    color: "#06b6d4",
+    hoverColor: "#22d3ee",
+    purpose: "The Data Layer ensures data remains confidential, accurate, and available. Through encryption, access control, and data protection strategies, it guarantees that even in the event of a breach, sensitive information cannot be exploited or lost.",
+    tools: [
+      { id: "encryption", name: "Data Encryption", description: "AES-256, RSA encryption for data at rest and in transit", category: "Encryption" },
+      { id: "dlp", name: "Data Loss Prevention (DLP)", description: "Monitors and prevents unauthorized data exfiltration", category: "Prevention" },
+      { id: "backup", name: "Backup & Recovery", description: "Regular encrypted backups with tested recovery procedures", category: "Recovery" },
+      { id: "classification", name: "Data Classification", description: "Categorizes data by sensitivity for appropriate protection", category: "Governance" },
+      { id: "masking", name: "Data Masking", description: "Obscures sensitive data in non-production environments", category: "Privacy" },
+      { id: "rights", name: "Digital Rights Management", description: "Controls access and usage of sensitive documents", category: "Access Control" }
+    ]
+  },
+  {
+    id: "monitoring",
+    name: "Monitoring and Response",
+    order: 6,
+    color: "#14b8a6",
+    hoverColor: "#2dd4bf",
+    purpose: "The Monitoring and Response Layer provides continuous oversight and rapid response capabilities across all security layers. It aggregates data from various security tools, detects anomalies, coordinates incident response, and maintains situational awareness to ensure threats are identified and addressed promptly before they can cause significant damage.",
+    tools: [
+      { id: "siem", name: "SIEM", description: "Security Information and Event Management for centralized log analysis and correlation", category: "Monitoring" },
+      { id: "soc-noc", name: "SOC/NOC 24x7 Monitoring", description: "Security and Network Operations Centers providing round-the-clock surveillance", category: "Operations" },
+      { id: "cirt", name: "CIRT", description: "Computer Incident Response Team for coordinated threat response", category: "Response" },
+      { id: "escalation", name: "Escalation Management", description: "Structured processes for escalating and managing security incidents", category: "Process" },
+      { id: "continuous-monitoring", name: "Continuous Monitoring and Assessment", description: "Ongoing evaluation of security controls and threat landscape", category: "Assessment" },
+      { id: "situational-awareness", name: "Situational Awareness", description: "Real-time understanding of security posture and threat environment", category: "Intelligence" }
+    ]
+  },
+  {
+    id: "policy",
+    name: "Policy Management",
     order: 7,
     color: "#10b981",
     hoverColor: "#34d399",
-    purpose: "Empowering people as the first line of defense",
-    description: "The Human Layer recognizes that people are both the strongest and weakest link in security. It focuses on security awareness training, social engineering defense, and creating a security-conscious culture. This outermost layer helps prevent attacks that exploit human psychology.",
+    purpose: "The Policy Management Layer establishes the governance framework, security policies, and risk management practices that guide all security operations. It combines security awareness training, compliance management, threat modeling, and security architecture to create a comprehensive security strategy that aligns with business objectives and regulatory requirements.",
     tools: [
-      { id: "awareness", name: "Security Awareness Training", description: "Regular education on threats and best practices", category: "Training" },
-      { id: "phishing-sim", name: "Phishing Simulations", description: "Tests employee response to simulated attacks", category: "Testing" },
-      { id: "policies", name: "Security Policies", description: "Clear guidelines for acceptable use and behavior", category: "Governance" },
-      { id: "background", name: "Background Checks", description: "Vetting employees and contractors before hiring", category: "Personnel" },
-      { id: "incident-reporting", name: "Incident Reporting", description: "Easy channels for reporting security concerns", category: "Process" },
-      { id: "culture", name: "Security Champions", description: "Embedded advocates promoting security culture", category: "Culture" }
+      { id: "pen-testing", name: "Pen Testing", description: "Controlled security assessments to identify vulnerabilities", category: "Testing" },
+      { id: "governance", name: "IT Security Governance", description: "Framework for security decision-making and oversight", category: "Governance" },
+      { id: "policies-compliance", name: "Security Policies and Compliance", description: "Documented security standards and regulatory adherence", category: "Compliance" },
+      { id: "awareness-training", name: "Security Awareness Training", description: "Regular education on threats and best practices for all personnel", category: "Training" },
+      { id: "architecture", name: "Security Architecture and Design", description: "Strategic security design and implementation patterns", category: "Architecture" },
+      { id: "threat-modeling", name: "Threat Modelling", description: "Systematic identification and mitigation of security threats", category: "Design" },
+      { id: "risk-management", name: "Risk Management", description: "Identification, assessment, and mitigation of security risks", category: "Governance" }
     ]
   }
 ];

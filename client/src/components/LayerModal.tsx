@@ -152,14 +152,10 @@ export function LayerModal({ layer, isOpen, onClose }: LayerModalProps) {
                   style={{ backgroundColor: `${layer.color}08` }}
                 >
                   <p 
-                    className="text-base font-medium mb-3"
-                    style={{ color: layer.color }}
+                    className="text-base font-medium leading-relaxed text-white"
                     data-testid="layer-purpose"
                   >
                     {layer.purpose}
-                  </p>
-                  <p className="text-muted-foreground leading-relaxed" data-testid="layer-description">
-                    {layer.description}
                   </p>
                 </div>
               </motion.div>
