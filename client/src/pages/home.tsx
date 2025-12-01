@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Play, 
@@ -39,7 +40,9 @@ import {
   ToggleRight,
   ShieldCheck,
   ShieldX,
-  ShieldAlert
+  ShieldAlert,
+  Eye,
+  FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -51,11 +54,10 @@ import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { 
-  securityLayers, 
   threatScenarios, 
   layerDetails,
   quizQuestions,
-  type SecurityLayer, 
+  type DefenseLayer, 
   type ThreatScenario,
   type QuizQuestion 
 } from "@shared/schema";
@@ -119,6 +121,78 @@ const severityColors: Record<string, string> = {
   critical: "bg-red-500/20 text-red-600 dark:text-red-400 border-red-500/30",
 };
 
+// Map DefenseLayer names to icons
+function getIconForLayer(layer: DefenseLayer) {
+  const name = layer.name.toLowerCase();
+  if (name.includes("perimeter")) return Shield;
+  if (name.includes("network")) return Network;
+  if (name.includes("endpoint")) return Server;
+  if (name.includes("application")) return Code;
+  if (name.includes("data")) return Database;
+  if (name.includes("monitoring")) return Eye;
+  if (name.includes("policy")) return FileText;
+  return Shield;
+}
+
+// Convert hex color to Tailwind color classes
+function getColorClassesFromHex(hexColor: string) {
+  // Map hex colors to approximate Tailwind classes
+  // DefenseLayer colors: #1e40af (blue-800), #2563eb (blue-600), #3b82f6 (blue-500), 
+  // #0ea5e9 (sky-500), #06b6d4 (cyan-500), #14b8a6 (teal-500), #10b981 (emerald-500)
+  const colorMap: Record<string, { bg: string; border: string; text: string; glow: string; solid: string }> = {
+    "#1e40af": { 
+      bg: "bg-blue-500/10 dark:bg-blue-500/20", 
+      border: "border-blue-500/30", 
+      text: "text-blue-600 dark:text-blue-400",
+      glow: "rgba(59, 130, 246, 0.5)",
+      solid: "bg-blue-500"
+    },
+    "#2563eb": { 
+      bg: "bg-blue-500/10 dark:bg-blue-500/20", 
+      border: "border-blue-500/30", 
+      text: "text-blue-600 dark:text-blue-400",
+      glow: "rgba(59, 130, 246, 0.5)",
+      solid: "bg-blue-500"
+    },
+    "#3b82f6": { 
+      bg: "bg-blue-500/10 dark:bg-blue-500/20", 
+      border: "border-blue-500/30", 
+      text: "text-blue-600 dark:text-blue-400",
+      glow: "rgba(59, 130, 246, 0.5)",
+      solid: "bg-blue-500"
+    },
+    "#0ea5e9": { 
+      bg: "bg-sky-500/10 dark:bg-sky-500/20", 
+      border: "border-sky-500/30", 
+      text: "text-sky-600 dark:text-sky-400",
+      glow: "rgba(14, 165, 233, 0.5)",
+      solid: "bg-sky-500"
+    },
+    "#06b6d4": { 
+      bg: "bg-cyan-500/10 dark:bg-cyan-500/20", 
+      border: "border-cyan-500/30", 
+      text: "text-cyan-600 dark:text-cyan-400",
+      glow: "rgba(6, 182, 212, 0.5)",
+      solid: "bg-cyan-500"
+    },
+    "#14b8a6": { 
+      bg: "bg-teal-500/10 dark:bg-teal-500/20", 
+      border: "border-teal-500/30", 
+      text: "text-teal-600 dark:text-teal-400",
+      glow: "rgba(20, 184, 166, 0.5)",
+      solid: "bg-teal-500"
+    },
+    "#10b981": { 
+      bg: "bg-emerald-500/10 dark:bg-emerald-500/20", 
+      border: "border-emerald-500/30", 
+      text: "text-emerald-600 dark:text-emerald-400",
+      glow: "rgba(16, 185, 129, 0.5)",
+      solid: "bg-emerald-500"
+    },
+  };
+  return colorMap[hexColor] || layerColors.blue;
+}
+
 const iconMap: Record<string, typeof Shield> = {
   Building2,
   Network,
@@ -144,12 +218,14 @@ function ThreatScenarioSelector({
   threats, 
   selectedThreat, 
   onSelectThreat,
-  onSimulate
+  onSimulate,
+  layers
 }: { 
   threats: ThreatScenario[];
   selectedThreat: ThreatScenario | null;
   onSelectThreat: (threat: ThreatScenario) => void;
   onSimulate: () => void;
+  layers: DefenseLayer[];
 }) {
   return (
     <Card className="bg-card/80 backdrop-blur-sm">
@@ -204,7 +280,7 @@ function ThreatScenarioSelector({
                   <div className="flex items-center gap-2 text-sm">
                     <Shield className="w-4 h-4 text-green-500" />
                     <span className="text-muted-foreground">Blocked at:</span>
-                    <span className="font-medium">{securityLayers.find(l => l.id === selectedThreat.blockedAtLayer)?.name}</span>
+                    <span className="font-medium">{layers.find(l => l.order === selectedThreat.blockedAtLayer)?.name}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <Layers className="w-4 h-4 text-blue-500" />
@@ -228,27 +304,29 @@ function ThreatScenarioSelector({
 function AttackPathVisualization({ 
   threat, 
   currentStep,
-  isSimulating 
+  isSimulating,
+  layers
 }: { 
   threat: ThreatScenario | null;
   currentStep: number;
   isSimulating: boolean;
+  layers: DefenseLayer[];
 }) {
   if (!threat) return null;
 
   return (
     <div className="relative">
       <div className="flex items-center gap-1 overflow-x-auto pb-2">
-        {threat.attackPath.map((layerId, index) => {
-          const layer = securityLayers.find(l => l.id === layerId);
-          const colorClass = layer ? layerColors[layer.color] : layerColors.blue;
+        {threat.attackPath.map((layerOrder, index) => {
+          const layer = layers.find(l => l.order === layerOrder);
+          const colorClass = layer ? getColorClassesFromHex(layer.color) : layerColors.blue;
           const isCurrentStep = index === currentStep && isSimulating;
           const isPassed = index < currentStep;
-          const isBlocked = layerId === threat.blockedAtLayer && index === currentStep;
-          const Icon = layer ? getIcon(layer.icon) : Shield;
+          const isBlocked = layerOrder === threat.blockedAtLayer && index === currentStep;
+          const Icon = layer ? getIconForLayer(layer) : Shield;
 
           return (
-            <div key={layerId} className="flex items-center">
+            <div key={layerOrder} className="flex items-center">
               <motion.div
                 className={`
                   relative p-2 rounded-lg border-2 transition-all
@@ -292,103 +370,109 @@ function AttackPathVisualization({
         })}
       </div>
       <p className="text-xs text-muted-foreground mt-2">
-        Attack path: {threat.attackPath.map(id => securityLayers.find(l => l.id === id)?.shortName).join(" → ")}
+        Attack path: {threat.attackPath.map(order => layers.find(l => l.order === order)?.name).join(" → ")}
       </p>
     </div>
   );
 }
 
-function LayerDrillDown({ layer }: { layer: SecurityLayer }) {
-  const details = layerDetails.find(d => d.id === layer.id);
-  const colorClass = layerColors[layer.color] || layerColors.blue;
-  const Icon = getIcon(layer.icon);
-
-  if (!details) return null;
+function LayerDrillDown({ layer }: { layer: DefenseLayer }) {
+  const details = layerDetails.find(d => d.id === layer.order);
+  const colorClass = getColorClassesFromHex(layer.color);
+  const Icon = getIconForLayer(layer);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className={`p-4 rounded-xl ${colorClass.bg} ${colorClass.border} border`}>
-        <div className="flex items-center gap-3 mb-3">
+        <div className="flex items-center gap-3">
           <div className={`p-3 rounded-xl ${colorClass.bg} ${colorClass.border} border`}>
             <Icon className={`w-6 h-6 ${colorClass.text}`} />
           </div>
-          <div>
+          <div className="flex-1 min-w-0">
             <h3 className={`text-lg font-semibold ${colorClass.text}`}>{layer.name}</h3>
-            <p className="text-sm text-muted-foreground">{layer.description}</p>
+            <p className="text-sm text-muted-foreground line-clamp-2">{layer.purpose}</p>
           </div>
         </div>
       </div>
 
-      <div>
-        <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-          <History className="w-4 h-4 text-muted-foreground" />
-          Real-World Examples
-        </h4>
-        <div className="grid gap-3">
-          {details.realWorldExamples.map((example, idx) => (
-            <Card key={idx} className="bg-card/50">
-              <CardContent className="py-3 px-4">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="font-medium text-sm">{example.name}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{example.description}</p>
-                  </div>
-                  <Badge variant="outline" className="shrink-0">{example.year}</Badge>
-                </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  <span className="font-medium">Impact:</span> {example.impact}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-green-500" />
-          Best Practices
-        </h4>
-        <ul className="space-y-2">
-          {details.bestPractices.map((practice, idx) => (
-            <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
-              <ChevronRight className="w-4 h-4 mt-0.5 text-green-500 shrink-0" />
-              <span>{practice}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div>
-        <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-          <Wrench className="w-4 h-4 text-muted-foreground" />
-          Recommended Tools
-        </h4>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-          {details.tools.map((tool, idx) => (
-            <div key={idx} className="p-3 bg-muted/30 rounded-lg border">
-              <p className="font-medium text-sm">{tool.name}</p>
-              <Badge variant="secondary" className="text-xs mt-1">{tool.category}</Badge>
-              <p className="text-xs text-muted-foreground mt-2">{tool.description}</p>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {details && (
+          <>
+            <div>
+              <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                <History className="w-4 h-4 text-muted-foreground" />
+                Real-World Examples
+              </h4>
+              <div className="space-y-3">
+                {details.realWorldExamples.map((example, idx) => (
+                  <Card key={idx} className="bg-card/50">
+                    <CardContent className="py-3 px-4">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm">{example.name}</p>
+                          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{example.description}</p>
+                        </div>
+                        <Badge variant="outline" className="shrink-0 text-xs">{example.year}</Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        <span className="font-medium">Impact:</span> {example.impact}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
-          ))}
+
+            <div>
+              <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-green-500" />
+                Best Practices
+              </h4>
+              <ul className="space-y-2">
+                {details.bestPractices.map((practice, idx) => (
+                  <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
+                    <ChevronRight className="w-4 h-4 mt-0.5 text-green-500 shrink-0" />
+                    <span className="line-clamp-2">{practice}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </>
+        )}
+
+        <div className={details ? "lg:col-span-2" : ""}>
+          <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+            <Wrench className="w-4 h-4 text-muted-foreground" />
+            Recommended Tools
+          </h4>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {layer.tools.map((tool) => (
+              <div key={tool.id} className="p-3 bg-muted/30 rounded-lg border">
+                <p className="font-medium text-sm">{tool.name}</p>
+                <Badge variant="secondary" className="text-xs mt-1.5">{tool.category}</Badge>
+                <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{tool.description}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-function ComparisonMode({ enabledLayers }: { enabledLayers: number[] }) {
+function ComparisonMode({ enabledLayers, layers }: { enabledLayers: number[]; layers: DefenseLayer[] }) {
   const allEnabled = enabledLayers.length === 7;
-  const singleLayerEnabled = enabledLayers.length === 1;
   
   const calculateSecurityScore = (layers: number[]) => {
     return Math.round((layers.length / 7) * 100);
   };
 
   const getVulnerabilities = (layers: number[]) => {
-    const missing = securityLayers.filter(l => !layers.includes(l.id));
-    return missing.flatMap(l => l.threats);
+    const missingLayers = layers.filter(order => !enabledLayers.includes(order));
+    const unprotectedThreats = threatScenarios.filter(threat => 
+      !enabledLayers.includes(threat.blockedAtLayer)
+    );
+    return unprotectedThreats.map(t => t.name);
   };
 
   const securityScore = calculateSecurityScore(enabledLayers);
@@ -423,16 +507,16 @@ function ComparisonMode({ enabledLayers }: { enabledLayers: number[] }) {
               <div>
                 <p className="text-sm font-medium mb-2">Active Layers: {enabledLayers.length}/7</p>
                 <div className="flex flex-wrap gap-1">
-                  {securityLayers.map(layer => {
-                    const isEnabled = enabledLayers.includes(layer.id);
-                    const colorClass = layerColors[layer.color];
+                  {layers.map(layer => {
+                    const isEnabled = enabledLayers.includes(layer.order);
+                    const colorClass = getColorClassesFromHex(layer.color);
                     return (
                       <Badge 
                         key={layer.id} 
                         variant={isEnabled ? "default" : "outline"}
                         className={isEnabled ? colorClass.bg : 'opacity-50'}
                       >
-                        {layer.shortName}
+                        {layer.name}
                       </Badge>
                     );
                   })}
@@ -483,7 +567,7 @@ function ComparisonMode({ enabledLayers }: { enabledLayers: number[] }) {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
             {threatScenarios.slice(0, 4).map(threat => {
-              const blockedLayer = securityLayers.find(l => l.id === threat.blockedAtLayer);
+              const blockedLayer = layers.find(l => l.order === threat.blockedAtLayer);
               const isBlocked = enabledLayers.includes(threat.blockedAtLayer);
               const Icon = getIcon(threat.icon);
               
@@ -493,12 +577,14 @@ function ComparisonMode({ enabledLayers }: { enabledLayers: number[] }) {
                   className={`p-3 rounded-lg border ${isBlocked ? 'bg-green-500/10 border-green-500/30' : 'bg-red-500/10 border-red-500/30'}`}
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    <Icon className={`w-4 h-4 ${isBlocked ? 'text-green-500' : 'text-red-500'}`} />
-                    <span className="text-sm font-medium">{threat.name}</span>
+                    <Icon className={`w-4 h-4 flex-shrink-0 ${isBlocked ? 'text-green-500' : 'text-red-500'}`} />
+                    <span className="text-sm font-medium truncate">{threat.name}</span>
                   </div>
-                  <Badge variant={isBlocked ? "default" : "destructive"} className="text-xs">
-                    {isBlocked ? `Blocked at ${blockedLayer?.shortName}` : 'Not Protected'}
-                  </Badge>
+                  <div className="min-w-0">
+                    <Badge variant={isBlocked ? "default" : "destructive"} className="text-xs w-full justify-center break-words whitespace-normal">
+                      {isBlocked ? `Blocked at ${blockedLayer?.name}` : 'Not Protected'}
+                    </Badge>
+                  </div>
                 </div>
               );
             })}
@@ -511,10 +597,12 @@ function ComparisonMode({ enabledLayers }: { enabledLayers: number[] }) {
 
 function QuizMode({ 
   questions, 
-  onComplete 
+  onComplete,
+  layers
 }: { 
   questions: QuizQuestion[];
   onComplete: (score: number) => void;
+  layers: DefenseLayer[];
 }) {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
@@ -576,7 +664,7 @@ function QuizMode({
     );
   }
 
-  const relatedLayer = question.relatedLayer ? securityLayers.find(l => l.id === question.relatedLayer) : null;
+  const relatedLayer = question.relatedLayer ? layers.find(l => l.order === question.relatedLayer) : null;
 
   return (
     <Card className="max-w-2xl mx-auto">
@@ -688,10 +776,12 @@ function QuizMode({
 
 function LayerConfigurationPanel({ 
   enabledLayers, 
-  onToggleLayer 
+  onToggleLayer,
+  layers
 }: { 
   enabledLayers: number[];
-  onToggleLayer: (layerId: number) => void;
+  onToggleLayer: (layerOrder: number) => void;
+  layers: DefenseLayer[];
 }) {
   return (
     <Card>
@@ -706,10 +796,10 @@ function LayerConfigurationPanel({
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {securityLayers.map(layer => {
-            const colorClass = layerColors[layer.color];
-            const Icon = getIcon(layer.icon);
-            const isEnabled = enabledLayers.includes(layer.id);
+          {layers.map(layer => {
+            const colorClass = getColorClassesFromHex(layer.color);
+            const Icon = getIconForLayer(layer);
+            const isEnabled = enabledLayers.includes(layer.order);
             
             return (
               <div 
@@ -726,13 +816,13 @@ function LayerConfigurationPanel({
                     <p className={`font-medium text-sm ${isEnabled ? colorClass.text : 'text-muted-foreground'}`}>
                       {layer.name}
                     </p>
-                    <p className="text-xs text-muted-foreground">{layer.shortName}</p>
+                    <p className="text-xs text-muted-foreground">Layer {layer.order}</p>
                   </div>
                 </div>
                 <Switch 
                   checked={isEnabled}
-                  onCheckedChange={() => onToggleLayer(layer.id)}
-                  data-testid={`switch-layer-${layer.id}`}
+                  onCheckedChange={() => onToggleLayer(layer.order)}
+                  data-testid={`switch-layer-${layer.order}`}
                 />
               </div>
             );
@@ -750,14 +840,14 @@ function SecurityLayerStrip({
   isEnabled,
   onClick
 }: { 
-  layer: SecurityLayer; 
+  layer: DefenseLayer; 
   isActive: boolean; 
   isComplete: boolean;
   isEnabled: boolean;
   onClick: () => void;
 }) {
-  const colorClass = layerColors[layer.color] || layerColors.blue;
-  const Icon = getIcon(layer.icon);
+  const colorClass = getColorClassesFromHex(layer.color);
+  const Icon = getIconForLayer(layer);
 
   return (
     <motion.button
@@ -772,14 +862,14 @@ function SecurityLayerStrip({
       `}
       whileHover={{ scale: 1.01 }}
       whileTap={{ scale: 0.99 }}
-      data-testid={`layer-strip-${layer.id}`}
+      data-testid={`layer-strip-${layer.order}`}
     >
       <div className={`p-2 rounded-lg ${isActive ? colorClass.bg : 'bg-muted/50'} ${isActive ? colorClass.border : 'border-transparent'} border`}>
         <Icon className={`w-5 h-5 ${isActive ? colorClass.text : 'text-muted-foreground'}`} />
       </div>
       <div className="flex-1 text-left min-w-0">
         <p className={`text-sm font-medium truncate ${isActive ? colorClass.text : 'text-foreground'}`}>
-          {layer.shortName}
+          {layer.name}
         </p>
       </div>
       {isComplete && isEnabled && (
@@ -930,13 +1020,13 @@ function LayerCard({
   isComplete,
   threatBlocked 
 }: { 
-  layer: SecurityLayer; 
+  layer: DefenseLayer; 
   isActive: boolean; 
   isComplete: boolean;
   threatBlocked: ThreatScenario | null;
 }) {
-  const colorClass = layerColors[layer.color] || layerColors.blue;
-  const Icon = getIcon(layer.icon);
+  const colorClass = getColorClassesFromHex(layer.color);
+  const Icon = getIconForLayer(layer);
 
   return (
     <AnimatePresence mode="wait">
@@ -949,41 +1039,41 @@ function LayerCard({
           className="h-full"
         >
           <Card className={`h-full border-2 ${colorClass.border} ${colorClass.bg} backdrop-blur-sm flex flex-col overflow-hidden`}>
-            <CardHeader className="pb-3 flex flex-row items-center gap-3 flex-shrink-0">
-              <div className={`p-3 rounded-xl ${colorClass.bg} ${colorClass.border} border`}>
-                <Icon className={`w-6 h-6 ${colorClass.text}`} />
+            <CardHeader className="pb-2 pt-3 flex flex-row items-center gap-2 flex-shrink-0">
+              <div className={`p-2 rounded-lg ${colorClass.bg} ${colorClass.border} border`}>
+                <Icon className={`w-5 h-5 ${colorClass.text}`} />
               </div>
               <div className="flex-1 min-w-0">
-                <CardTitle className={`text-lg font-semibold ${colorClass.text}`}>
+                <CardTitle className={`text-base font-semibold ${colorClass.text}`}>
                   {layer.name}
                 </CardTitle>
-                <p className="text-sm text-muted-foreground mt-0.5">Layer {layer.id} of 7</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Layer {layer.order} of 7</p>
               </div>
               {isComplete && (
-                <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
+                <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
               )}
             </CardHeader>
-            <CardContent className="space-y-4 flex-1 overflow-y-auto min-h-0">
+            <CardContent className="space-y-3 flex-1 overflow-hidden min-h-0">
               <div>
-                <h4 className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
+                <h4 className="text-sm font-medium text-foreground mb-1.5 flex items-center gap-2">
                   <Info className="w-4 h-4 text-muted-foreground" />
-                  Role
+                  Purpose
                 </h4>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {layer.role}
+                <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
+                  {layer.purpose}
                 </p>
               </div>
               
               <div>
-                <h4 className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
+                <h4 className="text-sm font-medium text-foreground mb-1.5 flex items-center gap-2">
                   <Shield className="w-4 h-4 text-muted-foreground" />
-                  Protection Mechanisms
+                  Security Tools
                 </h4>
                 <ul className="space-y-1.5">
-                  {layer.protectionMechanisms.map((mechanism, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <ChevronRight className="w-3 h-3 mt-1 flex-shrink-0 text-muted-foreground/60" />
-                      <span>{mechanism}</span>
+                  {layer.tools.map((tool) => (
+                    <li key={tool.id} className="flex items-start gap-2 text-sm text-muted-foreground">
+                      <ChevronRight className="w-3 h-3 mt-0.5 flex-shrink-0 text-muted-foreground/60" />
+                      <span className="line-clamp-1"><strong>{tool.name}</strong> - {tool.description}</span>
                     </li>
                   ))}
                 </ul>
@@ -1023,6 +1113,10 @@ function LayerCard({
 }
 
 export default function Home() {
+  const { data: layers = [], isLoading: layersLoading } = useQuery<DefenseLayer[]>({
+    queryKey: ["/api/defense-layers"],
+  });
+
   const [activeTab, setActiveTab] = useState("visualization");
   const [isPlaying, setIsPlaying] = useState(true);
   const [speed, setSpeed] = useState(1);
@@ -1033,7 +1127,7 @@ export default function Home() {
   const [isSimulatingAttack, setIsSimulatingAttack] = useState(false);
   const [attackStep, setAttackStep] = useState(0);
   const [enabledLayers, setEnabledLayers] = useState<number[]>([1, 2, 3, 4, 5, 6, 7]);
-  const [selectedLayerForDrilldown, setSelectedLayerForDrilldown] = useState<SecurityLayer | null>(null);
+  const [selectedLayerForDrilldown, setSelectedLayerForDrilldown] = useState<DefenseLayer | null>(null);
   const [quizScore, setQuizScore] = useState<number | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -1131,10 +1225,10 @@ export default function Home() {
     });
   }, [enabledLayers]);
 
-  const handleLayerClick = (layerId: number) => {
+  const handleLayerClick = (layerOrder: number) => {
     setIsPlaying(false);
-    setCurrentLayer(layerId);
-    setCompletedLayers(securityLayers.filter(l => l.id < layerId && enabledLayers.includes(l.id)).map(l => l.id));
+    setCurrentLayer(layerOrder);
+    setCompletedLayers(layers.filter(l => l.order < layerOrder && enabledLayers.includes(l.order)).map(l => l.order));
   };
 
   // Keyboard navigation - only for visualization tab layers
@@ -1187,15 +1281,26 @@ export default function Home() {
     simulateStep(0);
   };
 
-  const handleToggleLayer = (layerId: number) => {
+  const handleToggleLayer = (layerOrder: number) => {
     setEnabledLayers(prev => 
-      prev.includes(layerId) 
-        ? prev.filter(id => id !== layerId)
-        : [...prev, layerId].sort((a, b) => a - b)
+      prev.includes(layerOrder) 
+        ? prev.filter(order => order !== layerOrder)
+        : [...prev, layerOrder].sort((a, b) => a - b)
     );
   };
 
-  const activeLayer = securityLayers.find(l => l.id === currentLayer);
+  const activeLayer = layers.find(l => l.order === currentLayer);
+
+  if (layersLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <Shield className="w-12 h-12 animate-pulse text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading security layers...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background relative">
@@ -1263,14 +1368,14 @@ export default function Home() {
                     <div className="relative">
                       <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-border" />
                       <div className="space-y-2 relative">
-                        {securityLayers.map((layer) => (
+                        {layers.map((layer) => (
                           <SecurityLayerStrip
                             key={layer.id}
                             layer={layer}
-                            isActive={layer.id === currentLayer}
-                            isComplete={completedLayers.includes(layer.id)}
-                            isEnabled={enabledLayers.includes(layer.id)}
-                            onClick={() => handleLayerClick(layer.id)}
+                            isActive={layer.order === currentLayer}
+                            isComplete={completedLayers.includes(layer.order)}
+                            isEnabled={enabledLayers.includes(layer.order)}
+                            onClick={() => handleLayerClick(layer.order)}
                           />
                         ))}
                       </div>
@@ -1278,13 +1383,13 @@ export default function Home() {
                   </div>
 
                   <div className="flex-1 flex flex-col gap-4 min-w-0">
-                    <div className="h-48 md:h-56 lg:h-64 relative rounded-xl border bg-gradient-to-b from-card/50 to-background overflow-hidden">
+                    <div className="h-32 md:h-36 lg:h-40 relative rounded-xl border bg-gradient-to-b from-card/50 to-background overflow-hidden">
                       <div className="absolute inset-0 flex">
-                        {securityLayers.map((layer) => {
-                          const colorClass = layerColors[layer.color] || layerColors.blue;
-                          const isActive = layer.id === currentLayer;
-                          const isComplete = completedLayers.includes(layer.id);
-                          const isEnabled = enabledLayers.includes(layer.id);
+                        {layers.map((layer) => {
+                          const colorClass = getColorClassesFromHex(layer.color);
+                          const isActive = layer.order === currentLayer;
+                          const isComplete = completedLayers.includes(layer.order);
+                          const isEnabled = enabledLayers.includes(layer.order);
                           
                           return (
                             <div
@@ -1312,12 +1417,12 @@ export default function Home() {
                                   className={`p-2 md:p-3 rounded-xl ${isActive ? colorClass.bg : 'bg-muted/30'} ${isActive ? colorClass.border : 'border-transparent'} border`}
                                 >
                                   {(() => {
-                                    const Icon = getIcon(layer.icon);
+                                    const Icon = getIconForLayer(layer);
                                     return <Icon className={`w-5 h-5 md:w-6 md:h-6 ${isActive ? colorClass.text : 'text-muted-foreground'}`} />;
                                   })()}
                                 </motion.div>
                                 <p className={`mt-2 text-xs font-medium text-center ${isActive ? colorClass.text : 'text-muted-foreground'}`}>
-                                  {layer.shortName}
+                                  {layer.name}
                                 </p>
                                 {isComplete && isEnabled && (
                                   <CheckCircle2 className="w-4 h-4 text-green-500 mt-1" />
@@ -1347,7 +1452,7 @@ export default function Home() {
                         <LayerCard
                           layer={activeLayer}
                           isActive={true}
-                          isComplete={completedLayers.includes(activeLayer.id)}
+                          isComplete={completedLayers.includes(activeLayer.order)}
                           threatBlocked={null}
                         />
                       )}
@@ -1428,7 +1533,7 @@ export default function Home() {
                               <div className="flex items-center gap-2">
                                 <Shield className="w-4 h-4 text-green-500" />
                                 <span className="text-muted-foreground">Blocked at:</span>
-                                <span className="font-medium">{securityLayers.find(l => l.id === selectedThreatScenario.blockedAtLayer)?.name}</span>
+                                <span className="font-medium">{layers.find(l => l.order === selectedThreatScenario.blockedAtLayer)?.name}</span>
                               </div>
                               <div className="flex items-center gap-2">
                                 <Layers className="w-4 h-4 text-blue-500" />
@@ -1451,6 +1556,7 @@ export default function Home() {
                                   threat={selectedThreatScenario}
                                   currentStep={attackStep}
                                   isSimulating={isSimulatingAttack}
+                                  layers={layers}
                                 />
                               </div>
                               
@@ -1501,9 +1607,9 @@ export default function Home() {
                       </h2>
                     </div>
                     <div className="flex-1 space-y-2 overflow-y-auto min-h-0">
-                      {securityLayers.map(layer => {
-                        const colorClass = layerColors[layer.color];
-                        const Icon = getIcon(layer.icon);
+                      {layers.map(layer => {
+                        const colorClass = getColorClassesFromHex(layer.color);
+                        const Icon = getIconForLayer(layer);
                         const isSelected = selectedLayerForDrilldown?.id === layer.id;
                         
                         return (
@@ -1517,7 +1623,7 @@ export default function Home() {
                                 : 'bg-card hover:bg-muted/50 border-border'
                               }
                             `}
-                            data-testid={`drilldown-layer-${layer.id}`}
+                            data-testid={`drilldown-layer-${layer.order}`}
                           >
                             <div className="flex items-start gap-3">
                               <Icon className={`w-5 h-5 mt-0.5 flex-shrink-0 ${isSelected ? colorClass.text : 'text-muted-foreground'}`} />
@@ -1526,7 +1632,7 @@ export default function Home() {
                                   {layer.name}
                                 </p>
                                 <p className={`text-xs mt-0.5 ${isSelected ? 'text-muted-foreground' : 'text-muted-foreground/70'}`}>
-                                  {layer.shortName}
+                                  Layer {layer.order}
                                 </p>
                               </div>
                             </div>
@@ -1537,7 +1643,7 @@ export default function Home() {
                   </div>
 
                   {/* Right Side - Layer Details */}
-                  <div className="flex-1 min-w-0 overflow-y-auto">
+                  <div className="flex-1 min-w-0">
                     {selectedLayerForDrilldown ? (
                       <LayerDrillDown layer={selectedLayerForDrilldown} />
                     ) : (
@@ -1559,10 +1665,11 @@ export default function Home() {
                       <LayerConfigurationPanel
                         enabledLayers={enabledLayers}
                         onToggleLayer={handleToggleLayer}
+                        layers={layers}
                       />
                     </div>
                     <div className="lg:col-span-2">
-                      <ComparisonMode enabledLayers={enabledLayers} />
+                      <ComparisonMode enabledLayers={enabledLayers} layers={layers} />
                     </div>
                   </div>
                 </div>
@@ -1572,7 +1679,8 @@ export default function Home() {
                 <div className="max-w-3xl mx-auto py-4">
                   <QuizMode 
                     questions={quizQuestions} 
-                    onComplete={(score) => setQuizScore(score)} 
+                    onComplete={(score) => setQuizScore(score)}
+                    layers={layers}
                   />
                 </div>
               </TabsContent>

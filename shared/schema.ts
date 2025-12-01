@@ -80,43 +80,7 @@ export interface QuizQuestion {
 
 export const layerDetails: LayerDetails[] = [
   {
-    id: 1,
-    realWorldExamples: [
-      { name: "Google Data Center Security", description: "Multi-layer physical security with biometrics, 24/7 guards, and laser beam intrusion detection", year: 2023, impact: "Industry gold standard" },
-      { name: "Target Breach Entry Point", description: "HVAC contractor credentials used for initial access due to weak physical access controls", year: 2013, impact: "40 million credit cards stolen" }
-    ],
-    bestPractices: [
-      "Implement multi-factor physical authentication",
-      "Use mantrap entries for sensitive areas",
-      "Deploy 24/7 video surveillance with AI analytics",
-      "Conduct regular physical security audits"
-    ],
-    tools: [
-      { name: "HID Global", category: "Access Control", description: "Enterprise badge and biometric systems" },
-      { name: "Verkada", category: "Surveillance", description: "AI-powered security cameras" },
-      { name: "Genetec", category: "Security Management", description: "Unified security platform" }
-    ]
-  },
-  {
-    id: 2,
-    realWorldExamples: [
-      { name: "GitHub DDoS Mitigation", description: "Largest DDoS attack (1.35 Tbps) successfully mitigated through network security measures", year: 2018, impact: "Only 10 minutes of downtime" },
-      { name: "WannaCry Spread", description: "Ransomware spread through networks lacking proper segmentation", year: 2017, impact: "200,000+ computers infected" }
-    ],
-    bestPractices: [
-      "Segment networks based on security zones",
-      "Deploy IDS/IPS at network boundaries",
-      "Implement network access control (NAC)",
-      "Monitor all network traffic for anomalies"
-    ],
-    tools: [
-      { name: "Cisco ISE", category: "NAC", description: "Network access control solution" },
-      { name: "Snort", category: "IDS/IPS", description: "Open-source intrusion detection" },
-      { name: "Darktrace", category: "AI Security", description: "AI-powered network monitoring" }
-    ]
-  },
-  {
-    id: 3,
+    id: 1, // Perimeter Security (order 1)
     realWorldExamples: [
       { name: "JPMorgan Firewall", description: "Advanced firewall rules blocked attempted intrusions from nation-state actors", year: 2019, impact: "Prevented data breach" },
       { name: "Capital One Breach", description: "Misconfigured WAF allowed attacker to exploit SSRF vulnerability", year: 2019, impact: "100 million records exposed" }
@@ -134,25 +98,25 @@ export const layerDetails: LayerDetails[] = [
     ]
   },
   {
-    id: 4,
+    id: 2, // Network Security (order 2)
     realWorldExamples: [
-      { name: "SolarWinds Attack", description: "APT moved laterally after initial compromise due to flat network design", year: 2020, impact: "18,000+ organizations affected" },
-      { name: "Google BeyondCorp", description: "Zero Trust architecture eliminated perimeter-based security", year: 2014, impact: "Model for modern security" }
+      { name: "GitHub DDoS Mitigation", description: "Largest DDoS attack (1.35 Tbps) successfully mitigated through network security measures", year: 2018, impact: "Only 10 minutes of downtime" },
+      { name: "WannaCry Spread", description: "Ransomware spread through networks lacking proper segmentation", year: 2017, impact: "200,000+ computers infected" }
     ],
     bestPractices: [
-      "Implement Zero Trust architecture",
-      "Use micro-segmentation for workloads",
-      "Deploy privileged access management (PAM)",
-      "Monitor east-west traffic patterns"
+      "Segment networks based on security zones",
+      "Deploy IDS/IPS at network boundaries",
+      "Implement network access control (NAC)",
+      "Monitor all network traffic for anomalies"
     ],
     tools: [
-      { name: "CyberArk", category: "PAM", description: "Privileged access management" },
-      { name: "Illumio", category: "Micro-segmentation", description: "Zero Trust segmentation" },
-      { name: "Okta", category: "Identity", description: "Identity and access management" }
+      { name: "Cisco ISE", category: "NAC", description: "Network access control solution" },
+      { name: "Snort", category: "IDS/IPS", description: "Open-source intrusion detection" },
+      { name: "Darktrace", category: "AI Security", description: "AI-powered network monitoring" }
     ]
   },
   {
-    id: 5,
+    id: 3, // Endpoint Security (order 3)
     realWorldExamples: [
       { name: "Colonial Pipeline", description: "EDR detected ransomware but response was too slow", year: 2021, impact: "$4.4M ransom paid" },
       { name: "Microsoft Defender", description: "Blocked Emotet malware across enterprise endpoints", year: 2021, impact: "Millions of endpoints protected" }
@@ -170,7 +134,7 @@ export const layerDetails: LayerDetails[] = [
     ]
   },
   {
-    id: 6,
+    id: 4, // Application Security (order 4)
     realWorldExamples: [
       { name: "Equifax Breach", description: "Unpatched Apache Struts vulnerability exploited", year: 2017, impact: "147 million records exposed" },
       { name: "Log4Shell Response", description: "WAFs quickly updated to block Log4j exploitation attempts", year: 2021, impact: "Millions of attacks blocked" }
@@ -188,7 +152,7 @@ export const layerDetails: LayerDetails[] = [
     ]
   },
   {
-    id: 7,
+    id: 5, // Data Security (order 5)
     realWorldExamples: [
       { name: "Apple iCloud Encryption", description: "End-to-end encryption protects user data", year: 2022, impact: "Billions of users protected" },
       { name: "Marriott Breach", description: "Unencrypted passport data stolen", year: 2018, impact: "500 million guests affected" }
@@ -203,6 +167,42 @@ export const layerDetails: LayerDetails[] = [
       { name: "Symantec DLP", category: "DLP", description: "Data loss prevention" },
       { name: "Varonis", category: "Data Security", description: "Data security platform" },
       { name: "HashiCorp Vault", category: "Secrets", description: "Secrets management" }
+    ]
+  },
+  {
+    id: 6, // Monitoring and Response (order 6)
+    realWorldExamples: [
+      { name: "SolarWinds Detection", description: "SIEM systems detected anomalous behavior in supply chain attack", year: 2020, impact: "Early detection prevented further compromise" },
+      { name: "NotPetya Response", description: "Rapid incident response teams contained ransomware spread", year: 2017, impact: "Minimized damage through coordinated response" }
+    ],
+    bestPractices: [
+      "Deploy SIEM for centralized log analysis",
+      "Establish 24/7 SOC/NOC operations",
+      "Implement automated incident response",
+      "Maintain threat intelligence feeds"
+    ],
+    tools: [
+      { name: "Splunk", category: "SIEM", description: "Security information and event management" },
+      { name: "IBM QRadar", category: "SIEM", description: "Enterprise security analytics platform" },
+      { name: "Rapid7", category: "Security Operations", description: "Unified security operations platform" }
+    ]
+  },
+  {
+    id: 7, // Policy Management (order 7)
+    realWorldExamples: [
+      { name: "GDPR Compliance", description: "Organizations implemented comprehensive security policies to meet regulatory requirements", year: 2018, impact: "Improved data protection standards globally" },
+      { name: "NIST Framework Adoption", description: "Companies adopting NIST Cybersecurity Framework improved security posture", year: 2014, impact: "Standardized security practices" }
+    ],
+    bestPractices: [
+      "Develop comprehensive security policies",
+      "Conduct regular security awareness training",
+      "Perform periodic risk assessments",
+      "Maintain compliance with regulations"
+    ],
+    tools: [
+      { name: "KnowBe4", category: "Training", description: "Security awareness training platform" },
+      { name: "OneTrust", category: "Compliance", description: "Governance, risk, and compliance platform" },
+      { name: "ServiceNow GRC", category: "Governance", description: "Governance, risk, and compliance management" }
     ]
   }
 ];
@@ -471,9 +471,9 @@ export const threatScenarios: ThreatScenario[] = [
     id: 1,
     name: "DDoS Attack",
     type: "ddos",
-    blockedAtLayer: 2,
+    blockedAtLayer: 2, // Network Security - IDS/IPS and traffic analysis
     description: "Distributed denial of service attack attempting to overwhelm network resources with massive traffic volume",
-    attackPath: [1, 2],
+    attackPath: [1, 2], // Perimeter -> Network
     severity: "high",
     detectionMethod: "Traffic analysis detects abnormal volume patterns; IDS/IPS identifies attack signatures",
     realWorldExample: "2016 Dyn DNS Attack - Mirai botnet disrupted major websites including Twitter and Netflix",
@@ -483,9 +483,9 @@ export const threatScenarios: ThreatScenario[] = [
     id: 2,
     name: "Phishing Campaign",
     type: "phishing",
-    blockedAtLayer: 3,
+    blockedAtLayer: 1, // Perimeter Security - Email gateway
     description: "Sophisticated email attack using social engineering to trick users into revealing credentials or downloading malware",
-    attackPath: [1, 2, 3],
+    attackPath: [1], // Perimeter
     severity: "high",
     detectionMethod: "Email gateway scans for malicious links, attachments, and known phishing patterns",
     realWorldExample: "2020 Twitter Hack - Social engineering led to compromise of high-profile accounts",
@@ -495,9 +495,9 @@ export const threatScenarios: ThreatScenario[] = [
     id: 3,
     name: "Ransomware Attack",
     type: "ransomware",
-    blockedAtLayer: 5,
+    blockedAtLayer: 3, // Endpoint Security - EDR and antivirus
     description: "Malicious software that encrypts files and demands payment for decryption keys",
-    attackPath: [1, 2, 3, 4, 5],
+    attackPath: [1, 2, 3], // Perimeter -> Network -> Endpoint
     severity: "critical",
     detectionMethod: "EDR detects suspicious file encryption behavior; antivirus identifies known ransomware signatures",
     realWorldExample: "2021 Colonial Pipeline - REvil ransomware caused major fuel supply disruption",
@@ -507,9 +507,9 @@ export const threatScenarios: ThreatScenario[] = [
     id: 4,
     name: "SQL Injection",
     type: "intrusion",
-    blockedAtLayer: 6,
+    blockedAtLayer: 4, // Application Security - WAF
     description: "Attacker injects malicious SQL code through application inputs to access or manipulate database",
-    attackPath: [1, 2, 3, 4, 5, 6],
+    attackPath: [1, 2, 3, 4], // Perimeter -> Network -> Endpoint -> Application
     severity: "critical",
     detectionMethod: "WAF detects SQL injection patterns; input validation blocks malicious queries",
     realWorldExample: "2017 Equifax Breach - SQL injection exposed 147 million customer records",
@@ -519,9 +519,9 @@ export const threatScenarios: ThreatScenario[] = [
     id: 5,
     name: "Data Exfiltration",
     type: "data_theft",
-    blockedAtLayer: 7,
+    blockedAtLayer: 5, // Data Security - DLP
     description: "Attempt to transfer sensitive data outside the organization without authorization",
-    attackPath: [1, 2, 3, 4, 5, 6, 7],
+    attackPath: [1, 2, 3, 4, 5], // Perimeter -> Network -> Endpoint -> Application -> Data
     severity: "critical",
     detectionMethod: "DLP monitors data transfers; access controls detect unauthorized data access patterns",
     realWorldExample: "2014 Sony Pictures Hack - Massive data theft including unreleased films and emails",
@@ -531,11 +531,11 @@ export const threatScenarios: ThreatScenario[] = [
     id: 6,
     name: "Insider Threat",
     type: "insider",
-    blockedAtLayer: 4,
+    blockedAtLayer: 6, // Monitoring and Response - SIEM and monitoring
     description: "Malicious insider with valid credentials attempting to access unauthorized resources or exfiltrate data",
-    attackPath: [4],
+    attackPath: [6], // Monitoring (detected internally)
     severity: "high",
-    detectionMethod: "PAM monitors privileged access; Zero Trust verifies every access request",
+    detectionMethod: "SIEM correlates anomalous behavior; monitoring detects unusual access patterns",
     realWorldExample: "2013 Edward Snowden - Insider accessed and leaked classified NSA documents",
     icon: "UserX"
   },
@@ -543,11 +543,11 @@ export const threatScenarios: ThreatScenario[] = [
     id: 7,
     name: "Advanced Persistent Threat",
     type: "apt",
-    blockedAtLayer: 5,
+    blockedAtLayer: 6, // Monitoring and Response - SIEM and threat intelligence
     description: "Sophisticated, long-term attack by nation-state or organized group targeting high-value assets",
-    attackPath: [1, 2, 3, 4, 5],
+    attackPath: [1, 2, 3, 4, 5, 6], // All layers, detected by monitoring
     severity: "critical",
-    detectionMethod: "EDR behavioral analysis; threat intelligence correlation identifies APT tactics",
+    detectionMethod: "SIEM behavioral analysis; threat intelligence correlation identifies APT tactics",
     realWorldExample: "2020 SolarWinds Attack - Russian APT compromised thousands of organizations",
     icon: "Skull"
   },
@@ -555,9 +555,9 @@ export const threatScenarios: ThreatScenario[] = [
     id: 8,
     name: "Zero-Day Exploit",
     type: "malware",
-    blockedAtLayer: 6,
+    blockedAtLayer: 4, // Application Security - RASP
     description: "Attack exploiting previously unknown vulnerability before patches are available",
-    attackPath: [1, 2, 3, 4, 5, 6],
+    attackPath: [1, 2, 3, 4], // Perimeter -> Network -> Endpoint -> Application
     severity: "critical",
     detectionMethod: "RASP detects anomalous application behavior; sandboxing isolates suspicious code",
     realWorldExample: "2021 Log4Shell - Critical Java vulnerability exploited worldwide within hours of disclosure",
