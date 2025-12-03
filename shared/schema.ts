@@ -597,7 +597,8 @@ export const defenseLayersData: DefenseLayer[] = [
       { id: "web-gateway", name: "Web Security Gateway", description: "Controls and monitors web traffic and downloads", category: "Gateway" },
       { id: "dmz", name: "DMZ Architecture", description: "Isolated zone for public-facing services", category: "Architecture" },
       { id: "ddos", name: "DDoS Protection", description: "Mitigates distributed denial of service attacks", category: "Protection" },
-      { id: "proxy", name: "Reverse Proxy", description: "Masks internal infrastructure from external requests", category: "Architecture" }
+      { id: "proxy", name: "Reverse Proxy", description: "Masks internal infrastructure from external requests", category: "Architecture" },
+      { id: "vpn", name: "VPN Solutions", description: "Secure encrypted tunnels for remote access", category: "Encryption" }
     ]
   },
   {
@@ -612,7 +613,6 @@ export const defenseLayersData: DefenseLayer[] = [
       { id: "network-firewall", name: "Network Firewall", description: "Filters traffic between network segments based on rules", category: "Firewall" },
       { id: "nac", name: "Network Access Control", description: "Enforces security policies for devices joining the network", category: "Access Control" },
       { id: "segmentation", name: "Network Segmentation", description: "Isolates critical systems into separate network zones", category: "Architecture" },
-      { id: "vpn", name: "VPN Solutions", description: "Secure encrypted tunnels for remote access", category: "Encryption" },
       { id: "sdn", name: "Software-Defined Networking", description: "Programmable network security policies", category: "Architecture" }
     ]
   },
